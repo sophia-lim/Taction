@@ -1,2 +1,3 @@
 # THAT Assignment
-Testing clone
+Testing clone (from Sophia laptop)
+Testing commit (from Sophia laptop)
