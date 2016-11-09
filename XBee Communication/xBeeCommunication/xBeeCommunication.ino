@@ -1,30 +1,35 @@
-#define BUTTON A5
-const int LED = 6;
+#define BUTTON 2
+#define LED A4
+unsigned long timer = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(57600);
 
   pinMode(BUTTON, INPUT);
   pinMode(LED, OUTPUT);
 }
 
 void loop() {
-    //Serial.println("It is available.");
-  //while(Serial.available() >0) {
-    Serial.println("It is available.");
-    
-    if (analogRead(BUTTON) == HIGH) {
+
+    if (digitalRead(BUTTON) == HIGH) {
       //Serial.print("Hola");
-      Serial.write('1');  
-    }
-    if (Serial.read() == '1') {
+      delay(125);
+      //Serial.write(1);  
       digitalWrite(LED,HIGH);
       delay(1000);
       digitalWrite(LED,LOW);  
-      //Serial.print("FUCK");
-    }  
-  //}
-  
+      Serial.write("8 \n");
+      Serial.write("HELLO WORLD\n");
+      
+    } else {}
 
+
+    while(Serial.available() > 0) {
+      
+      if (Serial.read('8')) {
+        
+      }
+    }
+    
 }
