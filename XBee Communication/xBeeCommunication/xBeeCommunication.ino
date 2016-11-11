@@ -26,9 +26,11 @@ void loop() {
 
 
     while(Serial.available() > 0) {
-      
-      if (Serial.read('8')) {
-        
+      char temp = (char)Serial.read();
+      if (temp == '2') {
+        Serial.write("Ok. Gotcha.");
+      } else if (temp == '3'){
+        Serial.write("4");
       }
     }
     
