@@ -18,15 +18,17 @@ void loop() {
       //Serial.write(1);  
       digitalWrite(LED,HIGH);
       delay(1000);
-      digitalWrite(LED,LOW);  
+      digitalWrite(LED,LOW);
+      //Define yourself as COM8  
       Serial.write("8 \n");
-      Serial.write("HELLO WORLD\n");
       
     } else {}
 
 
     while(Serial.available() > 0) {
+      //Add other Arduino's identity into temp
       char temp = (char)Serial.read();
+      //If it is other Arduino, then confirm
       if (temp == '2') {
         Serial.write("Ok. Gotcha.");
       } else if (temp == '3'){
