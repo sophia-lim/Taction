@@ -27,10 +27,38 @@ const int POWER_LED_PIN = 13;          // Output pin for power LED (pin 13 to us
 const int NEO_PIXEL_PIN = 3;           // Output pin for neo pixels.
 const int NEO_PIXEL_COUNT = 5;         // Number of neo pixels.  You should be able to increase this without
                                        // any other changes to the program.
-//Number of cushions
+//Number of cushions -- Traction edit
 const int SURFACE_TRANSDUCER_COUNT = 5;
 const int MAX_CHARS = 65;              // Max size of the input command buffer
 
+//To start performance -- Traction edit
+#define BUTTON 2
+boolean startMusic = false;
+const float FADING_THRESHOLD = 10.0; // Threshold to initiate changes
+
+////////////////////////////////////////////////////////////////////////////////
+// SERIAL COMMUNICATION -- Traction edit
+// This method collects the frequency bins, and outputs them to 5 Arduinos/XBee
+////////////////////////////////////////////////////////////////////////////////
+
+// This methods sends the specific frequency bin as an output to the surface transducer
+void sendFrequencyThroughSerial(float frequencyBin) {
+    if (startMusic == true) {
+      Serial.write("8");
+    }
+}
+
+// This methods initiates the serial communication by seeing whether or not we have pressed
+// the "START" button. It is to be run in the loop();
+
+void startMusic() {
+    if (digitalRead(BUTTON) == HIGH && startMusic == true) {
+        startMusic = false;
+    } else if (digitalRead(BUTTON) == HIGH) {
+        startMusic = true;
+    } else {
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // INTERNAL STATE
