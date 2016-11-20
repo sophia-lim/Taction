@@ -14,8 +14,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 int SAMPLE_RATE_HZ = 9000;             // Sample rate of the audio in hertz.
-float SPECTRUM_MIN_DB = 50.0;          // Audio intensity (in decibels) that maps to low LED brightness.
-float SPECTRUM_MAX_DB = 80.0;          // Audio intensity (in decibels) that maps to high LED brightness.
+float SPECTRUM_MIN_DB = 30.0;          // Audio intensity (in decibels) that maps to low LED brightness.
+float SPECTRUM_MAX_DB = 60.0;          // Audio intensity (in decibels) that maps to high LED brightness.
 int LEDS_ENABLED = 1;                  // Control if the LED's should display the spectrum or not.  1 is true, 0 is false.
                                        // Useful for turning the LED display on and off with commands from the serial port.
 const int FFT_SIZE = 256;             // Size of the FFT.  Realistically can only be at most 256 
@@ -27,14 +27,14 @@ const int POWER_LED_PIN = 13;          // Output pin for power LED (pin 13 to us
 const int NEO_PIXEL_PIN = 3;           // Output pin for neo pixels.
 const int NEO_PIXEL_COUNT = 5;         // Number of neo pixels.  You should be able to increase this without
                                        // any other changes to the program.
-//Number of cushions -- Traction edit
-const int SURFACE_TRANSDUCER_COUNT = 5;
+                                       
 const int MAX_CHARS = 65;              // Max size of the input command buffer
 
 //To start performance -- Traction edit
-#define BUTTON 2
-boolean startMusic = false;
-const float FADING_THRESHOLD = 10.0; // Threshold to initiate changes
+#define BUTTON 2                        // Start/Stop performance button
+boolean startMusic = false;             // Initial state of performance is OFF
+const float FADING_THRESHOLD = 10.0;    // Threshold to initiate changes
+const int SURFACE_TRANSDUCER_COUNT = 5; // Number of cushions
 
 ////////////////////////////////////////////////////////////////////////////////
 // SERIAL COMMUNICATION -- Traction edit
@@ -44,6 +44,9 @@ const float FADING_THRESHOLD = 10.0; // Threshold to initiate changes
 // This methods sends the specific frequency bin as an output to the surface transducer
 void sendFrequencyThroughSerial(float frequencyBin) {
     if (startMusic == true) {
+      // check state of each cushion
+      // if their current frequencyBin == their past frequencyBin+FADING_THRESHOLD
+      // 
       Serial.write("8");
     }
 }
@@ -51,12 +54,15 @@ void sendFrequencyThroughSerial(float frequencyBin) {
 // This methods initiates the serial communication by seeing whether or not we have pressed
 // the "START" button. It is to be run in the loop();
 
-void startMusic() {
+void startTaction() {
+    //If it is on, then close it upon button press
     if (digitalRead(BUTTON) == HIGH && startMusic == true) {
         startMusic = false;
-    } else if (digitalRead(BUTTON) == HIGH) {
+    //If it is off, then open it upon button press
+    } else if (digitalRead(BUTTON) == HIGH && startMusic == false) {
         startMusic = true;
     } else {
+      //Keep current state
     }
 }
 
@@ -154,6 +160,7 @@ void windowMean(float* magnitudes, int lowBin, int highBin, float* windowMean, f
 
 // Convert a frequency to the appropriate FFT bin it will fall within.
 int frequencyToBin(float frequency) {
+  //Specific bins are divided into our ~5-6 cushions/surface transducers
   float binFrequency = float(SAMPLE_RATE_HZ) / float(FFT_SIZE);
   return int(frequency / binFrequency);
 }
@@ -228,6 +235,7 @@ void spectrumLoop() {
                frequencyToBin(frequencyWindow[i+1]),
                &intensity,
                &otherMean);
+               
     // Convert intensity to decibels.
     intensity = 20.0*log10(intensity);
     // Scale the intensity and clamp between 0 and 1.0.
@@ -235,7 +243,10 @@ void spectrumLoop() {
     intensity = intensity < 0.0 ? 0.0 : intensity;
     intensity /= (SPECTRUM_MAX_DB-SPECTRUM_MIN_DB);
     intensity = intensity > 1.0 ? 1.0 : intensity;
-    Serial.print("Intensity ");
+    float frequncier = intensity;
+    Serial.print("Frequency at ");
+    Serial.println(i);
+    Serial.println(frequncier); 
     pixels.setPixelColor(i, pixelHSVtoRGBColor(hues[i], 1.0, intensity));
   }
   pixels.show();
