@@ -1,92 +1,68 @@
-int message = 9675;
-char tilde = '~';
-byte masterId = 0;
-byte slave_1 = 1;
-byte slave_2 = 2;
-
+#define TILDE    126
+#define M_ID     0
+#define MY_ID    1
+#define FIN      10
+#define MSIZE    3
 
 void setup(){
- Serial.begin(9600);
-
+ Serial.begin(57600);
 }
 
 
 void loop(){
-
-  //Serial.println(reseiveIntMessageSlvae());
-  while (Serial.available() > 0) {
-    char temp = (char)Serial.read();
-    if (temp == '1') {
-      Serial.write("y");
-      Serial.println("Got the 1.");
-    } else {
-      Serial.println("Didn't get the 1.");
-    }
-  }
-    Serial.println("No serial");
+ Serial.println(reseiveIntMessageSlvae());
 }
 
-
-void sendMessageInt(int msg, byte slaveId){
-
- int msgOne  = byte(msg/256);
- int msgTwo  = byte(msg%256);
-
- Serial.write(tilde);
- Serial.write(masterId);
- Serial.write(slaveId);
- Serial.write(msgOne);
- Serial.write(msgTwo);
-
-}
-
-boolean echoReceived(){
-
- char tilda = '~';
- 
- if(Serial.read() > 0){
-
-   if(Serial.read() == tilda){
-
-     if(Serial.read() == slave_1){
-       
-       if(Serial.read() == 'y'){
-        
-        return true; 
-       }
-     }
-   }
- }
- return false;
-}
 
 
 int reseiveIntMessageSlvae(){
 
- byte myID = slave_1;
- int recover = 0;
- char tilda = '~';
+int recover = 0;
 
  while(Serial.available() > 0){
-  
-   if(Serial.read() == tilda){
 
-     if(Serial.read() == masterId){
+   delay(5);
+   uint8_t _t = Serial.read();
 
-       if(Serial.read() == myID){
+   if(_t == TILDE){
 
-         recover = 0;
-         byte partOne = Serial.read();
-         byte partTwo = Serial.read();
+     delay(5);
+     uint8_t _t = Serial.read();
 
-         recover = ((int)partOne)*256 + partTwo;
+     if(_t == M_ID){
 
-         char received = 'y';
+       delay(5);
+       uint8_t _t = Serial.read();
 
-         Serial.write(tilda);
-         Serial.write(myID);
-         Serial.write(received);
+       if(Serial.read() == MY_ID){
 
+         delay(5);
+         uint8_t _t = Serial.read();
+
+         if(Serial.read() == MSIZE){
+
+          
+           byte partOne;
+           byte partTwo; 
+           int counter = 0;
+
+           do{
+               partOne = Serial.read();
+               partTwo = Serial.read();
+               counter +=2;
+               
+               _t = Serial.read();
+           }
+           while(counter <= MSIZE && _t != 10);
+
+             recover = ((int)partOne)*256 + partTwo;
+
+           char received = 'y';
+
+           Serial.write(TILDE);
+           Serial.write(MY_ID);
+           Serial.write(received);
+         }
        }
      }
    }
