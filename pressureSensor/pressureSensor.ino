@@ -38,11 +38,13 @@ void loop() {
   Serial.println(sensorValue);
 
 //  colorWipe(strip.Color(calculateBrightness(sensorValue), 0, 0), 0); // Red
-  colorStrip();
+  LEDbrightness = calculateBrightness(sensorValue);
+  colorStrip(LEDbrightness);
 }
 
-void colorStrip(){
+void colorStrip(int brightness){
   for (int i = 0; i< strip.numPixels(); i++){
+        strip.setBrightness(brightness);
         strip.setPixelColor(i, 255, 0, 255); 
         strip.show(); 
   }  
