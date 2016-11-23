@@ -1,3 +1,5 @@
+
+
 // Audio Spectrum Display
 // Copyright 2013 Tony DiCola (tony@tonydicola.com)
 
@@ -8,11 +10,13 @@
 #include <Adafruit_NeoPixel.h>
 
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Serial Communication Protocol Variables
 ////////////////////////////////////////////////////////////////////////////////
 
 #define HWSERIAL Serial3
+#define HWSERIAL_2 Serial1
 #define TILDE    126
 #define M_ID     0
 #define S_ID_1   1
@@ -261,20 +265,20 @@ void spectrumLoop() {
     Serial.print("INDEX: ");
     Serial.println(i);
 
-    if ( i + 1 == 1 ) {
-      Serial.println("I'm 1");
-      sendMessageInt(intensitInt, 1);
-      Serial.println(intensitInt);
-      Serial.println();
-    }
+//    if ( i + 1 == 1 ) {
+//      Serial.println("I'm 1");
+//      sendMessageInt(intensitInt, 1, HWSERIAL);
+//      Serial.println(intensitInt);
+//      Serial.println();
+//    }
 
     // intensitInt = convertFloatToInt(intensity);
 
-//    if ( i + 1 == 2 ) {
-//      Serial.println("I'm 2");
-//      sendMessageInt(intensitInt, 2);
-//      Serial.println(intensitInt);
-//    }
+    if ( i + 1 == 2 ) {
+      Serial.println("I'm 2");
+      sendMessageInt(intensitInt, 2, HWSERIAL_2);
+      Serial.println(intensitInt);
+    }
 
     //    sendMessageInt(intensitInt, i+1);
 
@@ -400,18 +404,18 @@ int convertFloatToInt(float floater) {
 }
 
 
-void sendMessageInt(uint16_t msg, uint8_t slaveId) {
+void sendMessageInt(uint16_t msg, uint8_t slaveId, HardwareSerial  &serial) {
 
   int msgOne  = highByte(msg);
   int msgTwo  = lowByte(msg);
 
-  HWSERIAL.write(TILDE);
-  HWSERIAL.write(M_ID);
-  HWSERIAL.write(slaveId);
-  HWSERIAL.write(MSIZE);
-  HWSERIAL.write(msgOne);
-  HWSERIAL.write(msgTwo);
-  HWSERIAL.write(FIN);
+  serial.write(TILDE);
+  serial.write(M_ID);
+  serial.write(slaveId);
+  serial.write(MSIZE);
+  serial.write(msgOne);
+  serial.write(msgTwo);
+  serial.write(FIN);
 }
 
 boolean echoReceived() {
