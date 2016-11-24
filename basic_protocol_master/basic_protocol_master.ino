@@ -44,10 +44,9 @@ void loop(){
 //    Serial.println(newMsg);
  }
 
-
-
  if(echoReceived())
    Serial.println("Success");
+   //digitalWrite(LED,LOW);
 
 }
 

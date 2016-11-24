@@ -1,6 +1,6 @@
 #define TILDE    126
 #define M_ID     0
-#define MY_ID    1
+#define MY_ID    2
 #define FIN      10
 #define MSIZE    3 //Next 3 bytes are the last
 
@@ -10,9 +10,13 @@ void setup(){
 
 
 void loop(){
- Serial.println(reseiveIntMessageSlvae());
+// Serial.println(reseiveIntMessageSlvae());
 }
 
+void serialEvent(){
+
+  Serial.println(reseiveIntMessageSlvae());
+}
 
 int reseiveIntMessageSlvae(){
 

@@ -16,7 +16,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #define HWSERIAL Serial3
-#define HWSERIAL_2 Serial1
 #define TILDE    126
 #define M_ID     0
 #define S_ID_1   1
@@ -136,10 +135,15 @@ void loop() {
 }
 
 
-void serialEvent() {
-  Serial.println("In serial event!!!");
-  if (echoReceived())
-    Serial.println("Received back!");
+//  SerialEvent occurs whenever a new data comes in the
+// hardware serial RX.  This routine is run between each
+// time loop() runs, so using delay inside loop can delay
+// response.  Multiple bytes of data may be available.
+ 
+void serialEvent3() {
+  HWSERIAL.println("Teensy in Serial Event.");
+//  if (echoReceived())
+//    Serial.println("Received back!");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
