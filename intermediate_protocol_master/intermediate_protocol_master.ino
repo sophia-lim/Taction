@@ -15,13 +15,19 @@
 // Serial Communication Protocol Variables
 ////////////////////////////////////////////////////////////////////////////////
 
-#define HWSERIAL Serial3
+#define HWSERIAL Serial1
 #define TILDE    126
 #define M_ID     0
 #define S_ID_1   1
 #define S_ID_2   2
 #define FIN      10
 #define MSIZE    3
+#define DLED     13
+
+
+uint8_t slaves[] = { S_ID_1, S_ID_2 };
+int intensities[5] = {0,0,0,0,0};
+int selector = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
@@ -59,6 +65,60 @@ const int SURFACE_TRANSDUCER_COUNT = 5; // Number of cushions
 // This method collects the frequency bins, and outputs them to 5 Arduinos/XBee
 ////////////////////////////////////////////////////////////////////////////////
 
+void blinkLED(uint8_t l, uint16_t t,uint8_t r) {
+  for(int i = 0; i < r; i++) {
+    digitalWrite(l, HIGH);
+    delay(t);
+    digitalWrite(l, LOW);
+    delay(t);
+  }
+}
+
+int convertFloatToInt(float floater) {
+  return  floater * 100;
+}
+
+
+
+void sendMessageInt(uint16_t msg,  uint8_t slaveId) {
+  int msgOne  = highByte(msg);
+  int msgTwo  = lowByte(msg);
+
+  HWSERIAL.write(TILDE);
+  HWSERIAL.write(M_ID);
+  HWSERIAL.write(slaveId);
+  HWSERIAL.write(MSIZE);
+  HWSERIAL.write(msgOne);
+  HWSERIAL.write(msgTwo);
+  HWSERIAL.write(FIN);
+}
+
+boolean echoReceived() {
+
+  while (HWSERIAL.available() > 0) {
+
+    delay(5);
+    uint8_t _t = HWSERIAL.read();
+
+    if (_t == TILDE) {
+
+      delay(5);
+      uint8_t _t = HWSERIAL.read();
+
+      if (_t == S_ID_1) {
+
+        delay(5);
+        uint8_t _t = HWSERIAL.read();
+
+        if (_t == 'y') {
+
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,10 +140,26 @@ float hues[NEO_PIXEL_COUNT];
 // MAIN SKETCH FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
 
+//  SerialEvent occurs whenever a new data comes in the
+// hardware serial RX.  This routine is run between each
+// time loop() runs, so using delay inside loop can delay
+// response.  Multiple bytes of data may be available.
+ 
+void serialEvent() {
+  Serial.println("Teensy in Serial Event.");
+//  if (echoReceived())
+//    Serial.println("Received back!");
+}
+
+
 void setup() {
   // Set up serial port.
   Serial.begin(57600);
   HWSERIAL.begin(57600);
+  
+  /* DEBUG LED */
+  pinMode(DLED, OUTPUT);
+  blinkLED(DLED, 100, 5);
 
   // Set up ADC and audio input.
   pinMode(AUDIO_INPUT_PIN, INPUT);
@@ -110,6 +186,16 @@ void setup() {
   samplingBegin();
 }
 
+void sendIntensities() {
+  for (int i = 0; i < NEO_PIXEL_COUNT; i++) {
+    Serial.print("Intensity at ");
+    Serial.print(i+1);
+    Serial.print(": ");
+    Serial.println(intensities[i]);
+    sendMessageInt(intensities[i], i+1);  
+  }
+}
+
 void loop() {
   // Calculate FFT if a full sample is available.
   if (samplingIsDone()) {
@@ -123,6 +209,7 @@ void loop() {
     if (LEDS_ENABLED == 1)
     {
       spectrumLoop();
+      sendIntensities();
     }
 
     // Restart audio sampling.
@@ -132,19 +219,12 @@ void loop() {
 
   // Parse any pending commands.
   parserLoop();
+    //sendMessageInt(random(0, 65535), slaves[selector == 0 ? selector = 1 : selector = 0]);  
+    blinkLED(DLED, 500, 2);
+
 }
 
 
-//  SerialEvent occurs whenever a new data comes in the
-// hardware serial RX.  This routine is run between each
-// time loop() runs, so using delay inside loop can delay
-// response.  Multiple bytes of data may be available.
- 
-void serialEvent3() {
-  HWSERIAL.println("Teensy in Serial Event.");
-//  if (echoReceived())
-//    Serial.println("Received back!");
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // UTILITY FUNCTIONS
@@ -246,7 +326,8 @@ void spectrumLoop() {
   // Update each LED based on the intensity of the audio
   // in the associated frequency window.
 
-  float intensity, otherMean;
+  float intensity = 0.0;
+  float otherMean = 0.0;
   for (int i = 0; i < NEO_PIXEL_COUNT; ++i) {
 
     windowMean(magnitudes,
@@ -266,32 +347,22 @@ void spectrumLoop() {
 
     int intensitInt = convertFloatToInt(intensity);
 
-    Serial.print("INDEX: ");
+    Serial.print("Spectrum loop index: ");
     Serial.println(i);
+    Serial.print("Spectrum loop intensity: ");
+    Serial.println(intensitInt);
+   
+    //sendMessageInt(random(0, 65535), slaves[selector == 0 ? selector = 1 : selector = 0]);
+    
 
-//    if ( i + 1 == 1 ) {
-//      Serial.println("I'm 1");
-//      sendMessageInt(intensitInt, 1, HWSERIAL);
-//      Serial.println(intensitInt);
-//      Serial.println();
-//    }
-
-    // intensitInt = convertFloatToInt(intensity);
-
-    if ( i + 1 == 2 ) {
-      Serial.println("I'm 2");
-      sendMessageInt(intensitInt, 2, HWSERIAL_2);
-      Serial.println(intensitInt);
-    }
-
-    //    sendMessageInt(intensitInt, i+1);
+//        sendMessageInt(intensitInt, i+1);
 
     //    for(int i = 0; i < FFT_SIZE/2; i++){
     //      Serial.println(samples[i]*intensity);
     //        digitalWrite(SPEAKER, samples[i]*intensity);
     //        delay(5);
     //    }
-
+    intensities[i] = intensitInt;
     pixels.setPixelColor(i, pixelHSVtoRGBColor(hues[i], 1.0, intensity));
   }
   pixels.show();
@@ -401,51 +472,3 @@ void parseCommand(char* command) {
     pixels.show();
   }
 }
-
-
-int convertFloatToInt(float floater) {
-  return  floater * 100;
-}
-
-
-void sendMessageInt(uint16_t msg, uint8_t slaveId, HardwareSerial  &serial) {
-
-  int msgOne  = highByte(msg);
-  int msgTwo  = lowByte(msg);
-
-  serial.write(TILDE);
-  serial.write(M_ID);
-  serial.write(slaveId);
-  serial.write(MSIZE);
-  serial.write(msgOne);
-  serial.write(msgTwo);
-  serial.write(FIN);
-}
-
-boolean echoReceived() {
-
-  while (HWSERIAL.available() > 0) {
-
-    delay(5);
-    uint8_t _t = HWSERIAL.read();
-
-    if (_t == TILDE) {
-
-      delay(5);
-      uint8_t _t = HWSERIAL.read();
-
-      if (_t == S_ID_1) {
-
-        delay(5);
-        uint8_t _t = HWSERIAL.read();
-
-        if (_t == 'y') {
-
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
