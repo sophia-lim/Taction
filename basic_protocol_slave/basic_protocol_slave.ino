@@ -4,7 +4,7 @@
 
 #define TILDE    126
 #define M_ID     0
-#define MY_ID    1
+#define MY_ID    3
 #define FIN      10
 #define MSIZE    3
 #define DLED     13

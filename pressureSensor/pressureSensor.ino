@@ -1,6 +1,7 @@
 // Description : The following code reads analog pressure values from 3 Velostat pressure sensors
 // All three control the RGB values for the LED strip
 
+#include <PCM.h>
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
   #include <avr/power.h>
@@ -31,7 +32,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, lightPin, NEO_RGB + NEO_KHZ800);
 void setup() {
   // initialize serial communications at 9600 bps:
   Serial.begin(9600);
-  
+//    startPlayback(sample, sizeof(sample));
+
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 
@@ -39,6 +41,20 @@ void setup() {
   digitalWrite(pressureInPin_1, HIGH);
   digitalWrite(pressureInPin_2, HIGH);
   digitalWrite(pressureInPin_3, HIGH);
+}
+// Color Neopixel strips
+void colorStrip(int red, int green, int blue){
+  for (int i = 0; i< strip.numPixels(); i++){
+        strip.setBrightness(100);
+        strip.setPixelColor(i, red, green, blue); 
+        strip.show(); 
+  }  
+}
+// This methods takes in the analog in value of the pressure sensor and returns the according RGB saturation values
+int calculateSaturation(int pressure){
+  //The sensor is a pullup, so the value will be lower if pressure is higher
+  int saturation = 255 - (pressure/4);
+  return saturation;
 }
 
 void loop() {
@@ -62,29 +78,5 @@ void loop() {
 
   // Color the Neopixels
   colorStrip(lightSaturation_R, lightSaturation_G, lightSaturation_B);
+
 }
-
-// Color Neopixel strips
-void colorStrip(int R, int G, int B){
-  for (int i = 0; i< strip.numPixels(); i++){
-        strip.setBrightness(100);
-        strip.setPixelColor(i, R, G, B); 
-        strip.show(); 
-  }  
-}
-
-// This methods takes in the analog in value of the pressure sensor and returns the according RGB saturation values
-int calculateSaturation(int pressure){
-  //The sensor is a pullup, so the value will be lower if pressure is higher
-  int saturation = 255 - (pressure/4);
-  return saturation;
-}
-
-// Timer that will only check for pressure once every measure of song
-void updateColors() {}
-
-// Calculate BPM according to initial taps from pedal
-void calculateBPM() {}
-
-// LED fading in/out on each beat
-void fadeBrightness() {}

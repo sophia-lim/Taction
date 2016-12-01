@@ -159,7 +159,7 @@ void setup() {
   
   /* DEBUG LED */
   pinMode(DLED, OUTPUT);
-  blinkLED(DLED, 100, 5);
+  blinkLED(DLED, 5, 5);
 
   // Set up ADC and audio input.
   pinMode(AUDIO_INPUT_PIN, INPUT);
@@ -188,10 +188,10 @@ void setup() {
 
 void sendIntensities() {
   for (int i = 0; i < NEO_PIXEL_COUNT; i++) {
-    Serial.print("Intensity at ");
-    Serial.print(i+1);
-    Serial.print(": ");
-    Serial.println(intensities[i]);
+    //Serial.print("Intensity at ");
+    //Serial.print(i+1);
+    //Serial.print(": ");
+    //Serial.println(intensities[i]);
     sendMessageInt(intensities[i], i+1);  
   }
 }
@@ -220,7 +220,7 @@ void loop() {
   // Parse any pending commands.
   parserLoop();
     //sendMessageInt(random(0, 65535), slaves[selector == 0 ? selector = 1 : selector = 0]);  
-    blinkLED(DLED, 500, 2);
+    blinkLED(DLED, 50, 2);
 
 }
 
@@ -347,15 +347,15 @@ void spectrumLoop() {
 
     int intensitInt = convertFloatToInt(intensity);
 
-    Serial.print("Spectrum loop index: ");
-    Serial.println(i);
-    Serial.print("Spectrum loop intensity: ");
-    Serial.println(intensitInt);
+//    Serial.print("Spectrum loop index: ");
+//    Serial.println(i);
+//    Serial.print("Spectrum loop intensity: ");
+//    Serial.println(intensitInt);
    
-    //sendMessageInt(random(0, 65535), slaves[selector == 0 ? selector = 1 : selector = 0]);
+//    sendMessageInt(random(0, 65535), slaves[selector == 0 ? selector = 1 : selector = 0]);
     
 
-//        sendMessageInt(intensitInt, i+1);
+//    sendMessageInt(intensitInt, i+1);
 
     //    for(int i = 0; i < FFT_SIZE/2; i++){
     //      Serial.println(samples[i]*intensity);
